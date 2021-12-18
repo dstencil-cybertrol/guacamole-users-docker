@@ -1,4 +1,11 @@
-FROM python:3.9-slim-bullseye
+FROM python:3.9-alpine as builder
+
+
+RUN mkdir /wheels \
+  && python -m pip wheel --wheel-dir /wheels sqlalchemy pyyaml rich ldap3 pymysql dnspython
+
+
+FROM python:3.9-alpine
 LABEL maintainer="alphabet5"
 
 ENV MYSQL_HOSTNAME=mysql
@@ -16,17 +23,9 @@ ENV LDAP_GROUP_NAME_MOD='{regex}'
 ENV REFRESH_SPEED=300
 ENV LOGGING_LOCALS=false
 
+COPY --from=builder /wheels /wheels
 
-RUN \
-    apt-get update \
-    && apt-get upgrade -y \
-    && rm -rf /var/lib/apt/lists/* \
-    && mkdir /templates  \
-    && mkdir /templates/sql \
-    && mkdir /wheels \
-    && python3.9 -m pip wheel --no-cache-dir --wheel-dir /wheels sqlalchemy pyyaml rich ldap3 pymysql dnspython \
-    && python3.9 -m pip install --no-cache /wheels/*  \
-    && rm -rf /wheels
+RUN python -m pip install --no-cache-dir /wheels/*
 
 COPY guacamole-users.py /guacamole-users.py
 
