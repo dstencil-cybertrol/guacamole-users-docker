@@ -268,6 +268,10 @@ if __name__ == '__main__':
     install(show_locals=show_locals)
     from time import sleep
     while True:
-        update_connections()
-        update_users()
+        try:
+            update_connections()
+            update_users()
+        except pymysql.err.OperationalError:
+            console.print_exception(max_frames=1)
+            console.print("Unable to connect to sql. Please check if sql is available.")
         sleep(int(os.environ['REFRESH_SPEED']))
