@@ -261,7 +261,11 @@ def update_users():
 if __name__ == '__main__':
     # Install rich traceback for better diagnostics.
     console = Console()
-    install(show_locals=True)
+    if os.environ['LOGGING_LOCALS'].lower() in ['f', 'false', 'n', 'no']:
+        show_locals = False
+    else:
+        show_locals = True
+    install(show_locals=show_locals)
     from time import sleep
     while True:
         update_connections()
