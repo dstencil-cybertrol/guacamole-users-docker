@@ -1,12 +1,14 @@
 import os
 import sqlalchemy
+from sqlalchemy.dialects.mysql import insert
+# from sqlalchemy.sql import text
 from time import sleep
 import pymysql
 from ldap3 import Server, Connection, ALL, SUBTREE
 import yaml
-import hashlib
-from datetime import datetime
-import uuid
+# import hashlib
+# from datetime import datetime
+# import uuid
 from rich.console import Console
 from rich.traceback import install
 from rich import print
@@ -14,19 +16,28 @@ import json
 from copy import deepcopy
 from collections import defaultdict
 import re
-import threading
-from sqlalchemy.sql import text
+# import threading
 import dns.resolver
 
 
 def sql_insert(engine, conn, table, **kwargs):
-    import sqlalchemy
-    from sqlalchemy.dialects.mysql import insert
     metadata = sqlalchemy.MetaData()
     table_obj = sqlalchemy.Table(table, metadata, autoload=True, autoload_with=engine)
     insert_statement = insert(table_obj).values(**kwargs)
     on_duplicate = insert_statement.on_duplicate_key_update(**kwargs)
     return conn.execute(on_duplicate)
+
+# def pymysql_insert(connection, table, **kwargs):
+#     # # Connect to SQL
+#     # engine = sqlalchemy.create_engine('mysql+pymysql://' +
+#     #                                   os.environ['MYSQL_USER'] + ':' +
+#     #                                   os.environ['MYSQL_PASSWORD'] + '@' +
+#     #                                   os.environ['MYSQL_HOSTNAME'] + ':3306/' +
+#     #                                   os.environ['MYSQL_DATABASE'])
+#     with connection.cursor() as cursor:
+#         keys = ','.join(kwargs.keys())
+#         values = ','.join(kwargs.values())
+#         sql = f"INSERT INTO {table} ({keys}) VALUES ({values}) ON DUPLICATE KEY UPDATE "
 
 
 def wait_for_sql(engine, retries=60):
