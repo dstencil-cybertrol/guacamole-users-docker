@@ -40,8 +40,8 @@ def sql_insert(engine, conn, table, **kwargs):
 #         sql = f"INSERT INTO {table} ({keys}) VALUES ({values}) ON DUPLICATE KEY UPDATE "
 
 
-def wait_for_sql(engine, retries=60):
-    for i in range(retries):
+def wait_for_sql(engine):
+    while True:
         try:
             with engine.begin() as sql_conn:
                 sql_conn.execute('SELECT 1')
@@ -49,13 +49,11 @@ def wait_for_sql(engine, retries=60):
         except pymysql.err.OperationalError:
             print("Cannot connect to mysql. Waiting...")
             sleep(1)
-    print("Error connecting to MySQL. Exiting.")
-    return False
 
 
-def wait_for_ldap(ldap_info, retries=60):
+def wait_for_ldap(ldap_info):
     print_traceback = True
-    for i in range(retries):
+    while True:
         try:
             server = Server(ldap_info['ldap-hostname'],
                             get_info=ALL)
@@ -70,8 +68,6 @@ def wait_for_ldap(ldap_info, retries=60):
                 print_traceback = False
             print("Cannot connect to ldap server. Waiting...")
             sleep(1)
-    print("Error connecting to ldap. Exiting.")
-    return False
 
 
 def get_mysql():
