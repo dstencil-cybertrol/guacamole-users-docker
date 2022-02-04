@@ -86,6 +86,9 @@ def get_ldap():
     ldap_info = yaml.load(open('/configs/guacamole.properties', 'r'), yaml.FullLoader)
     if not wait_for_ldap(ldap_info):
         return False
+    # Loop through environment variables to allow guacamole.properties values to be overriden by the env.
+    for k, v in os.environ.items():
+        ldap_info[k.lower().replace('_', '-')] = v
     # Fetch LDAP information
     server = Server(ldap_info['ldap-hostname'],
                     get_info=ALL)
