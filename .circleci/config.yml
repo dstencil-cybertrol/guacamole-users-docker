@@ -1,0 +1,22 @@
+version: 2.1
+orbs:
+  docker: circleci/docker@2.0.1
+workflows:
+  build-docker-image-only:
+    jobs:
+      - docker/publish:
+          image: alphabet5/guacamole-users
+#          update-description: true
+#          tag: latest
+  weekly:
+    triggers: #use the triggers key to indicate a scheduled build
+      - schedule:
+          cron: "0 0 * * 0" # use cron syntax to set the schedule
+          filters:
+            branches:
+              only:
+                - main
+    jobs:
+      - docker/publish:
+          image: alphabet5/guacamole-users
+          tag: latest
