@@ -172,3 +172,6 @@ spec:
 
 ### 0.0.2
 - Changed the guacamole.properties for the ldap connection to be overridden with environment variables. This allows for ldap-search-bind-password to be passed with LDAP_SEARCH_BIND_PASSWORD environment variable.
+
+### 0.0.3
+- Changed the order so that ldap_info is updated before checking / waiting for the ldap server. 
