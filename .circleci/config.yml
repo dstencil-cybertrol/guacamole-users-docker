@@ -2,10 +2,11 @@ version: 2.1
 orbs:
   docker: circleci/docker@2.0.1
 workflows:
-  build-docker-image-only:
+  on-push:
     jobs:
       - docker/publish:
           image: alphabet5/guacamole-users
+          tag: latest
 #          update-description: true
 #          tag: latest
   weekly:
