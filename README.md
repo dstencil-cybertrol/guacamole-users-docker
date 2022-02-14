@@ -165,13 +165,17 @@ spec:
 
 ## Changelog
 
-### 0.0.1
-- Changed the LDAP connection attempt to never timeout (timeout causes a crash if the ldap server is unavailable.)
-- Changed the MySQL connection attempt to never timeout.
-- Changed the kubernetes manifest in the readme to just be for guacamole-users-docker.
+### 0.0.4
+- Changed the check for MANUAL_ONLY to be more explicit.
+- Updated the logic for admin groups for the groups to be included.
+
+### 0.0.3
+- Changed the order so that ldap_info is updated before checking / waiting for the ldap server. 
 
 ### 0.0.2
 - Changed the guacamole.properties for the ldap connection to be overridden with environment variables. This allows for ldap-search-bind-password to be passed with LDAP_SEARCH_BIND_PASSWORD environment variable.
 
-### 0.0.3
-- Changed the order so that ldap_info is updated before checking / waiting for the ldap server. 
+### 0.0.1
+- Changed the LDAP connection attempt to never timeout (timeout causes a crash if the ldap server is unavailable.)
+- Changed the MySQL connection attempt to never timeout.
+- Changed the kubernetes manifest in the readme to just be for guacamole-users-docker.

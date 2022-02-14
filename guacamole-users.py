@@ -116,7 +116,7 @@ def update_connections():
         connections = list()
         connection_ids = list()
         # name_cn_id = defaultdict(lambda: {})
-        if os.environ['MANUAL_ONLY'].lower() not in ['true', 'yes', 't', 'y']:
+        if os.environ['MANUAL_ONLY'].lower() in ['false', 'no', 'f', 'n']:
             for computer in ldap_computers['entries']:
                 auto_conn_dns = os.environ['CFG_AUTO_CONNECTION_DNS']
                 if auto_conn_dns in ['true', 't', 'y', 'yes']:
@@ -175,7 +175,7 @@ def update_connections():
 
 
 def update_users():
-    if os.environ['MANUAL_ONLY'].lower() not in ['true', 'yes', 't', 'y']:
+    if os.environ['MANUAL_ONLY'].lower() in ['false', 'no', 'f', 'n']:
         ldap_conn, ldap_info = get_ldap()
         # Create list of LDAP Groups that contain all sub-groups.
         ldap_conn.search(search_base=ldap_info['ldap-group-base-dn'],
@@ -198,7 +198,7 @@ def update_users():
             for conn_name in manual_connections['manual_permissions'][group]:
                 # This is appending the connection id for each named connection in the manual_permissions section.
                 parent_groups[group].append(conn_ids[conn_name])
-    if os.environ['MANUAL_ONLY'].lower() not in ['true', 'yes', 't', 'y']:
+    if os.environ['MANUAL_ONLY'].lower() in ['false', 'no', 'f', 'n']:
         # Add the groups from the regular expression defining the group name from the connection name.
         nested_groups = defaultdict(lambda: [])
         nested_groups_cn = dict()
@@ -222,14 +222,13 @@ def update_users():
             for dn in dn_list:
                 parent_groups[nested_groups_cn[dn]] += parent_groups[group]
 
-    admin_groups = os.environ['GUAC_ADMIN_GROUPS'].split(',')
-    for admin_group in admin_groups:
-        for conn_id in conn_ids.values():
-            parent_groups[admin_group].append(conn_id)
-
     group_permissions = dict()
     for group_name, ids in parent_groups.items():
         group_permissions[group_name] = list(set(ids))
+    
+    admin_groups = os.environ['GUAC_ADMIN_GROUPS'].split(',')
+    for admin_group in admin_groups:
+        group_permissions[admin_group] = list(set(conn_ids.values()))
 
     # Add groups and assign permissions.
     with engine.begin() as sql_conn:
@@ -284,4 +283,6 @@ if __name__ == '__main__':
         except pymysql.err.OperationalError:
             console.print_exception(max_frames=1)
             console.print("Unable to connect to sql. Please check if sql is available.")
+        except:
+            console.print_exception()
         sleep(int(os.environ['REFRESH_SPEED']))
