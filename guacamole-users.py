@@ -20,6 +20,11 @@ import re
 import dns.resolver
 
 
+def dprint(input_obj):
+    if os.environ['DEBUG'].lower() in ['t', 'true', 'y', 'yes']:
+        console.print(input_obj)
+
+
 def sql_insert(engine, conn, table, **kwargs):
     metadata = sqlalchemy.MetaData()
     table_obj = sqlalchemy.Table(table, metadata, autoload=True, autoload_with=engine)
@@ -108,6 +113,8 @@ def update_connections():
                          search_filter=os.environ['LDAP_COMPUTER_FILTER'],
                          attributes=['cn', 'dNSHostName'])
         ldap_computers = json.loads(ldap_conn.response_to_json())
+        dprint('ldap_computers')
+        dprint(ldap_computers)
         auto_conn_parameters = yaml.load(open('/configs/auto-connections.yaml', 'r'), yaml.FullLoader)
     engine = get_mysql()
     # Create connections
@@ -183,12 +190,16 @@ def update_users():
                             search_filter='(objectCategory=Group)',
                             attributes=['cn', 'memberOf'])
         ldap_entries = json.loads(ldap_conn.response_to_json())
+        dprint('Ldap groups.')
+        dprint(ldap_entries)
         # Also search the base DN for groups. This is required as if the ldap-group-base-dn is an OU, it won't list out members of the group that are in the base DN.
         ldap_conn.search(search_base=os.environ['LDAP_BASE_DN'],
                             search_scope=SUBTREE,
                             search_filter='(objectCategory=Group)',
                             attributes=['cn', 'memberOf'])
         ldap_entries_base = json.loads(ldap_conn.response_to_json)
+        dprint('ldap groups base')
+        dprint(ldap_entries_base)
     # List parent groups. admin + manual + regex
     # Add conn id's for parent groups. admin + manual + regex
     engine = get_mysql()
@@ -218,6 +229,8 @@ def update_users():
                         nested_groups[group_name].append(group['dn'])
                         groups_cn[group['dn']] = group['attributes']['cn']
                         break
+        dprint('parent_groups')
+        dprint(parent_groups)
         for i in range(4):
             for group_name, dn_list in nested_groups.items():
                 for group in ldap_entries['entries']:
@@ -229,6 +242,9 @@ def update_users():
                         if member_of in dn_list:
                             nested_groups[group_name].append(group['dn'])
                             groups_cn[group['dn']] = group['attributes']['cn']
+        dprint('nested_groups')
+        dprint(nested_groups)
+        
         for group, dn_list in nested_groups.items():
             for dn in dn_list:
                 parent_groups[groups_cn[dn]] += parent_groups[group]
@@ -281,7 +297,7 @@ def update_users():
 if __name__ == '__main__':
     # Install rich traceback for better diagnostics.
     console = Console()
-    if os.environ['LOGGING_LOCALS'].lower() in ['f', 'false', 'n', 'no']:
+    if os.environ['DEBUG'].lower() in ['f', 'false', 'n', 'no']:
         show_locals = False
     else:
         show_locals = True

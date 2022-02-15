@@ -21,7 +21,7 @@ ENV LDAP_COMPUTER_FILTER='(objectCategory=Computer)'
 ENV LDAP_GROUP_NAME_FROM_CONN_NAME_REGEX='(.*?)\..+'
 ENV LDAP_GROUP_NAME_MOD='{regex}'
 ENV REFRESH_SPEED=300
-ENV LOGGING_LOCALS=false
+ENV DEBUG=false
 
 COPY --from=builder /wheels /wheels
 
