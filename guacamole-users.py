@@ -197,7 +197,7 @@ def update_users():
                             search_scope=SUBTREE,
                             search_filter='(objectCategory=Group)',
                             attributes=['cn', 'memberOf'])
-        ldap_entries_base = json.loads(ldap_conn.response_to_json)
+        ldap_entries_base = json.loads(ldap_conn.response_to_json())
         dprint('ldap groups base')
         dprint(ldap_entries_base)
     # List parent groups. admin + manual + regex
@@ -244,7 +244,7 @@ def update_users():
                             groups_cn[group['dn']] = group['attributes']['cn']
         dprint('nested_groups')
         dprint(nested_groups)
-        
+
         for group, dn_list in nested_groups.items():
             for dn in dn_list:
                 parent_groups[groups_cn[dn]] += parent_groups[group]
