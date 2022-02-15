@@ -239,7 +239,7 @@ def update_users():
             attributes=["cn", "memberOf"],
         )
         ldap_entries = json.loads(ldap_conn.response_to_json())
-        dprint("Ldap groups.")
+        dprint("ldap_entries")
         dprint(ldap_entries)
         # Also search the base DN for groups. This is required as if the ldap-group-base-dn is an OU, it won't list out members of the group that are in the base DN.
         ldap_conn.search(
@@ -249,7 +249,7 @@ def update_users():
             attributes=["cn", "memberOf"],
         )
         ldap_entries_base = json.loads(ldap_conn.response_to_json())
-        dprint("ldap groups base")
+        dprint("ldap_entries_base")
         dprint(ldap_entries_base)
     # List parent groups. admin + manual + regex
     # Add conn id's for parent groups. admin + manual + regex
@@ -296,7 +296,7 @@ def update_users():
                             nested_groups[group_name].append(group["dn"])
                 for group in ldap_entries_base["entries"]:
                     for member_of in dn_list:
-                        if member_of in dn_list:
+                        if member_of in group["attributes"]["memberOf"]:
                             nested_groups[group_name].append(group["dn"])
                             groups_cn[group["dn"]] = group["attributes"]["cn"]
         dprint("nested_groups")
