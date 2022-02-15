@@ -169,6 +169,7 @@ spec:
 - Changed the check for MANUAL_ONLY to be more explicit.
 - Updated the logic for admin groups for the groups to be included.
 - Include searching the ldap base for groups that are nested. This is to fix OU groups that have groups in the ldab base.
+- Add debug printing.
 
 ### 0.0.3
 - Changed the order so that ldap_info is updated before checking / waiting for the ldap server. 
