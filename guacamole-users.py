@@ -294,11 +294,12 @@ def update_users():
                     for member_of in group["attributes"]["memberOf"]:
                         if member_of in dn_list:
                             nested_groups[group_name].append(group["dn"])
-                for group in ldap_entries_base["entries"]:
-                    for member_of in dn_list:
-                        if member_of in group["attributes"]["memberOf"]:
-                            nested_groups[group_name].append(group["dn"])
-                            groups_cn[group["dn"]] = group["attributes"]["cn"]
+                if ldap_info["ldap-group-base-dn"] != os.environ["LDAP_BASE_DN"]:
+                    for group in ldap_entries_base["entries"]:
+                        for member_of in dn_list:
+                            if member_of in group["attributes"]["memberOf"]:
+                                nested_groups[group_name].append(group["dn"])
+                                groups_cn[group["dn"]] = group["attributes"]["cn"]
         dprint("nested_groups")
         dprint(nested_groups)
 
