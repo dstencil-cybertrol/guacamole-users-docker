@@ -46,7 +46,7 @@ def wait_for_sql(engine):
             with engine.begin() as sql_conn:
                 sql_conn.execute('SELECT 1')
                 return True
-        except pymysql.err.OperationalError:
+        except:
             print("Cannot connect to mysql. Waiting...")
             sleep(1)
 
