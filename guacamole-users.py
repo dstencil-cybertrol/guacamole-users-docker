@@ -103,7 +103,7 @@ def update_connections():
     if os.environ['MANUAL_ONLY'].lower() not in ['true', 'yes', 't', 'y']:
         ldap_conn, ldap_info = get_ldap()
 
-        ldap_conn.search(search_base=os.environ['LDAP_COMPUTER_BASE_DN'],
+        ldap_conn.search(search_base=os.environ['LDAP_BASE_DN'],
                          search_scope=SUBTREE,
                          search_filter=os.environ['LDAP_COMPUTER_FILTER'],
                          attributes=['cn', 'dNSHostName'])
@@ -179,12 +179,18 @@ def update_users():
         ldap_conn, ldap_info = get_ldap()
         # Create list of LDAP Groups that contain all sub-groups.
         ldap_conn.search(search_base=ldap_info['ldap-group-base-dn'],
-                         search_scope=SUBTREE,
-                         search_filter='(objectCategory=Group)',
-                         attributes=['cn', 'memberOf'])
+                            search_scope=SUBTREE,
+                            search_filter='(objectCategory=Group)',
+                            attributes=['cn', 'memberOf'])
         ldap_entries = json.loads(ldap_conn.response_to_json())
-        # List parent groups. admin + manual + regex
-        # Add conn id's for parent groups. admin + manual + regex
+        # Also search the base DN for groups. This is required as if the ldap-group-base-dn is an OU, it won't list out members of the group that are in the base DN.
+        ldap_conn.search(search_base=os.environ['LDAP_BASE_DN'],
+                            search_scope=SUBTREE,
+                            search_filter='(objectCategory=Group)',
+                            attributes=['cn', 'memberOf'])
+        ldap_entries_base = json.loads(ldap_conn.response_to_json)
+    # List parent groups. admin + manual + regex
+    # Add conn id's for parent groups. admin + manual + regex
     engine = get_mysql()
     parent_groups = defaultdict(lambda: [])
     conn_ids = dict()
@@ -201,7 +207,7 @@ def update_users():
     if os.environ['MANUAL_ONLY'].lower() in ['false', 'no', 'f', 'n']:
         # Add the groups from the regular expression defining the group name from the connection name.
         nested_groups = defaultdict(lambda: [])
-        nested_groups_cn = dict()
+        groups_cn = dict()
         for conn_name, conn_id in conn_ids.items():
             regex_result = re.match(os.environ['LDAP_GROUP_NAME_FROM_CONN_NAME_REGEX'], conn_name).group(1)
             if regex_result is not None:
@@ -210,7 +216,7 @@ def update_users():
                     if group['attributes']['cn'] == group_name:
                         parent_groups[group_name].append(conn_id)
                         nested_groups[group_name].append(group['dn'])
-                        nested_groups_cn[group['dn']] = group['attributes']['cn']
+                        groups_cn[group['dn']] = group['attributes']['cn']
                         break
         for i in range(4):
             for group_name, dn_list in nested_groups.items():
@@ -218,9 +224,14 @@ def update_users():
                     for member_of in group['attributes']['memberOf']:
                         if member_of in dn_list:
                             nested_groups[group_name].append(group['dn'])
+                for group in ldap_entries_base['entries']:
+                    for member_of in dn_list:
+                        if member_of in dn_list:
+                            nested_groups[group_name].append(group['dn'])
+                            groups_cn[group['dn']] = group['attributes']['cn']
         for group, dn_list in nested_groups.items():
             for dn in dn_list:
-                parent_groups[nested_groups_cn[dn]] += parent_groups[group]
+                parent_groups[groups_cn[dn]] += parent_groups[group]
 
     group_permissions = dict()
     for group_name, ids in parent_groups.items():
