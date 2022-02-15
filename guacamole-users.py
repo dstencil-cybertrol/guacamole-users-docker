@@ -251,6 +251,11 @@ def update_users():
         ldap_entries_base = json.loads(ldap_conn.response_to_json())
         dprint("ldap_entries_base")
         dprint(ldap_entries_base)
+        groups_cn = dict()
+        for group in ldap_entries_base["entries"]:
+            groups_cn[group["dn"]] = group["attributes"]["cn"]
+        for group in ldap_entries["entries"]:
+            groups_cn[group["dn"]] = group["attributes"]["cn"]
     # List parent groups. admin + manual + regex
     # Add conn id's for parent groups. admin + manual + regex
     engine = get_mysql()
@@ -271,7 +276,6 @@ def update_users():
     if os.environ["MANUAL_ONLY"].lower() in ["false", "no", "f", "n"]:
         # Add the groups from the regular expression defining the group name from the connection name.
         nested_groups = defaultdict(lambda: [])
-        groups_cn = dict()
         for conn_name, conn_id in conn_ids.items():
             regex_result = re.match(
                 os.environ["LDAP_GROUP_NAME_FROM_CONN_NAME_REGEX"], conn_name
@@ -284,7 +288,6 @@ def update_users():
                     if group["attributes"]["cn"] == group_name:
                         parent_groups[group_name].append(conn_id)
                         nested_groups[group_name].append(group["dn"])
-                        groups_cn[group["dn"]] = group["attributes"]["cn"]
                         break
         dprint("parent_groups")
         dprint(parent_groups)
@@ -299,7 +302,6 @@ def update_users():
                         for member_of in dn_list:
                             if member_of in group["attributes"]["memberOf"]:
                                 nested_groups[group_name].append(group["dn"])
-                                groups_cn[group["dn"]] = group["attributes"]["cn"]
         dprint("nested_groups")
         dprint(nested_groups)
 
