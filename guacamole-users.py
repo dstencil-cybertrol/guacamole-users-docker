@@ -315,7 +315,8 @@ def update_users():
 
     admin_groups = os.environ["GUAC_ADMIN_GROUPS"].split(",")
     for admin_group in admin_groups:
-        group_permissions[admin_group] = list(set(conn_ids.values()))
+        if admin_group != "":
+            group_permissions[admin_group] = list(set(conn_ids.values()))
 
     # Add groups and assign permissions.
     with engine.begin() as sql_conn:
