@@ -272,7 +272,10 @@ def update_users():
         for group in manual_connections["manual_permissions"]:
             for conn_name in manual_connections["manual_permissions"][group]:
                 # This is appending the connection id for each named connection in the manual_permissions section.
-                parent_groups[group].append(conn_ids[conn_name])
+                try:
+                    parent_groups[group].append(conn_ids[conn_name])
+                except Keyerror:
+                    console.print("Error: Group permission defined for connection '" + conn_name + "' in group '" + group + "' but there is no connection with that name.")
     if os.environ["MANUAL_ONLY"].lower() in ["false", "no", "f", "n"]:
         # Add the groups from the regular expression defining the group name from the connection name.
         nested_groups = defaultdict(lambda: [])

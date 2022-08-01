@@ -24,6 +24,9 @@ docker logs -f guacamole-users
 
 ## Changelog
 
+### 0.0.6
+- Added exception to log and continue when a connection permission is defined for a connection that doesn't exist.
+
 ### 0.0.5
 - Added a check if admin groups is blank.
 - Removed unnecessary default values from the Dockerfile.
