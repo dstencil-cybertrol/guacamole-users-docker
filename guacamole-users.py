@@ -48,17 +48,17 @@ def sql_insert(engine, conn, table, **kwargs):
 #         values = ','.join(kwargs.values())
 #         sql = f"INSERT INTO {table} ({keys}) VALUES ({values}) ON DUPLICATE KEY UPDATE "
 
-
 def wait_for_sql(engine):
-    while True:
-        try:
-            with engine.begin() as sql_conn:
-                sql_conn.execute("SELECT 1")
-                return True
-        except:
-            print("Cannot connect to mysql. Waiting...")
-            sleep(1)
-
+    delay = 1
+    max_delay = 30
+    while True:
+        try:
+            with engine.begin() as sql_conn:
+                sql_conn.execute("SELECT 1")
+                print("Connected to MySQL database")
+                return True
+        except sqlalchemy.exc.OperationalError as e:
+            print(f"Failed to connect to MySQL database: {e}. Retrying in {delay} seconds...")
 
 def wait_for_ldap(ldap_info):
     print_traceback = True
